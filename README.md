@@ -1,55 +1,103 @@
 # FacultyFlow — Faculty Leave & Workload Management System
 
-## Included features
-- Authentication: faculty registration, login, logout, role-based access (Faculty/HOD/Admin)
-- Faculty dashboard and profile
-- Leave application, pending-request editing, status tracking, date-overlap validation
-- HOD/Admin approval and rejection with review notes
-- Faculty workload timetable and HOD/Admin workload entry
-- Substitute allocation for approved leave, with notifications
-- In-app notifications
-- Monthly leave counts and workload analytics
+## Project Overview
+FacultyFlow is a web-based application developed to simplify and manage faculty leave applications, approvals, workload distribution, and substitute allocation in an educational institution.
 
-## Requirements
-- Python 3.10+
-- Windows, macOS, or Linux
+The system provides a centralized platform for faculty members and administrators to manage leave and workload activities efficiently.
 
-## Run on Windows
-1. Extract the ZIP.
-2. Open the extracted `Faculty_Management_System` folder in VS Code.
-3. Open Terminal > New Terminal.
-4. Create and activate a virtual environment:
+## Objectives
+- Simplify faculty leave application and approval.
+- Maintain faculty workload and timetable information.
+- Manage substitute faculty allocation.
+- Provide notifications about leave request status.
+- Generate monthly workload reports.
 
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
+## Key Features
+1. **User Authentication:** Faculty registration and login.
+2. **Faculty Dashboard:** View personal information and dashboard details.
+3. **Leave Management:** Apply for, edit, and track leave requests.
+4. **Approval Management:** HOD/Admin can approve or reject leave requests.
+5. **Workload Management:** Manage faculty timetable and workload.
+6. **Substitute Allocation:** Assign replacement faculty members.
+7. **Notifications:** Display leave status updates.
+8. **Analytics:** View monthly workload reports.
+
+## Technologies Used
+- **Frontend:** HTML, CSS
+- **Backend:** Python, Flask
+- **Database:** SQLite
+- **Development Tool:** Visual Studio Code
+- **Version Control:** Git and GitHub
+
+## Installation and Setup
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/saumyakoche101/Faculty_Management_System.git
    ```
 
-   If PowerShell blocks activation, run this once in the same terminal:
-   `Set-ExecutionPolicy -Scope Process Bypass`
-   Then activate again.
+2. Open the project folder:
 
-5. Install packages:
+   ```bash
+   cd Faculty_Management_System
+   ```
 
-   ```powershell
+3. Create a virtual environment:
+
+   ```bash
+   python -m venv .venv
+   ```
+
+4. Activate the environment on Windows:
+
+   ```bash
+   .venv\Scripts\activate
+   ```
+
+5. Install dependencies:
+
+   ```bash
    pip install -r requirements.txt
    ```
 
-6. Start the application:
+6. Run the application:
 
-   ```powershell
+   ```bash
    python app.py
    ```
 
-7. Open http://127.0.0.1:5000 in Chrome.
+7. Open your browser and visit:
 
-## Demo accounts
-- Faculty: `faculty@demo.com` / `Faculty@123`
-- HOD: `hod@demo.com` / `HOD@123`
-- Admin: `admin@demo.com` / `Admin@123`
+   `http://127.0.0.1:5000`
 
-The database `faculty.db` is created automatically on first run and seeded with demo accounts and sample workload. To reset demo data, stop the server and delete `faculty.db`, then run `python app.py` again.
+## Project Structure
 
-## Important notes
-- This is a college demonstration prototype. Change the development `SECRET_KEY`, add CSRF protection, HTTPS, stronger administrative account provisioning, audit logging and production deployment controls before real institutional use.
-- New self-registrations are assigned the Faculty role. HOD/Admin demo accounts are seeded for jury demonstration; do not expose demo credentials on a public deployment.
+```text
+Faculty_Management_System/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+├── .gitignore
+│
+├── static/
+│   └── css/
+│
+└── templates/
+    ├── login.html
+    ├── register.html
+    ├── dashboard.html
+    ├── leaves.html
+    ├── workload.html
+    └── ...
+```
+
+## Future Enhancements
+- Email notifications.
+- Export workload reports to PDF or Excel.
+- Improved role-based access control.
+- Deployment on a cloud platform.
+
+## Author
+**Developed as a College Academic Project.**
