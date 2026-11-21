@@ -101,3 +101,20 @@ Faculty_Management_System/
 
 ## Author
 **Developed as a College Academic Project.**
+
+## Application Screenshots
+
+### 1. Faculty Login
+![Faculty Login](screenshots/login.png)
+
+### 2. Faculty Dashboard
+![Faculty Dashboard](screenshots/dashboard.png)
+
+### 3. Leave Application
+![Leave Application](screenshots/leave_application.png)
+
+### 4. HOD Leave Approval
+![HOD Leave Approval](screenshots/leave_approval.png)
+
+### 5. Faculty Workload Management
+![Faculty Workload](screenshots/workload.png)
