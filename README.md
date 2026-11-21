@@ -105,16 +105,16 @@ Faculty_Management_System/
 ## Application Screenshots
 
 ### 1. Faculty Login
-![Faculty Login](screenshots/login.png)
+![Faculty Login](screenshots/faculty-login.png)
 
 ### 2. Faculty Dashboard
-![Faculty Dashboard](screenshots/dashboard.png)
+![Faculty Dashboard](screenshots/faculty-dashboard.png)
 
 ### 3. Leave Application
-![Leave Application](screenshots/leave_application.png)
+![Leave Application](screenshots/leave-application.png)
 
 ### 4. HOD Leave Approval
-![HOD Leave Approval](screenshots/leave_approval.png)
+![HOD Leave Approval](screenshots/hod-approval.png)
 
-### 5. Faculty Workload Management
-![Faculty Workload](screenshots/workload.png)
+### 5. Faculty Workload
+![Faculty Workload](screenshots/faculty-workload.png)
