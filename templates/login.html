@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="auth-wrap"><div class="auth-brand"><div class="brand-icon large">F</div><div><h1>Faculty<span class="brand-light">Flow</span></h1><p>Smarter faculty operations, in one place.</p></div></div>
+<div class="auth-card"><div class="eyebrow">WELCOME BACK</div><h2>Sign in to your account</h2><p class="muted">Enter your details to access your workspace.</p>
+<form method="post"><label>Email address</label><input type="email" name="email" placeholder="you@college.edu" required>
+<label>Password</label><input type="password" name="password" placeholder="Enter your password" required>
+<button class="btn primary full" type="submit">Sign in <span>→</span></button></form>
+<div class="auth-switch">New faculty member? <a href="{{ url_for('register') }}">Create an account</a></div>
+</div><div class="demo-box"><strong>Demo accounts</strong><div>Faculty: faculty@demo.com / Faculty@123</div><div>HOD: hod@demo.com / HOD@123</div><div>Admin: admin@demo.com / Admin@123</div></div></div>
+{% endblock %}

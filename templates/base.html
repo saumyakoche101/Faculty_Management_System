@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}FacultyFlow{% endblock %} | Faculty Management</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+{% if session.get('user_id') %}
+<aside class="sidebar">
+  <a class="brand" href="{{ url_for('dashboard') }}"><span class="brand-icon">F</span><span>Faculty<span class="brand-light">Flow</span></span></a>
+  <div class="side-label">WORKSPACE</div>
+  <a class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">▦ &nbsp; Dashboard</a>
+  <a class="nav-link {% if request.endpoint in ['leaves','new_leave','edit_leave'] %}active{% endif %}" href="{{ url_for('leaves') }}">▤ &nbsp; Leave requests</a>
+  <a class="nav-link {% if request.endpoint=='workload' %}active{% endif %}" href="{{ url_for('workload') }}">◷ &nbsp; Workload</a>
+  {% if session.get('role') in ['HOD','Admin'] %}
+  <a class="nav-link {% if request.endpoint=='substitutions' %}active{% endif %}" href="{{ url_for('substitutions') }}">⇄ &nbsp; Substitutions</a>
+  <a class="nav-link {% if request.endpoint=='analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">▥ &nbsp; Analytics</a>
+  {% endif %}
+  <a class="nav-link {% if request.endpoint=='notifications' %}active{% endif %}" href="{{ url_for('notifications') }}">♧ &nbsp; Notifications <span class="nav-count">{{ unread_notifications }}</span></a>
+  <div class="side-bottom">
+    <div class="user-mini"><div class="avatar">{{ session.get('name','U')[0]|upper }}</div><div><strong>{{ session.get('name') }}</strong><small>{{ session.get('role') }}</small></div></div>
+    <a class="nav-link" href="{{ url_for('profile') }}">⚙ &nbsp; My profile</a>
+    <a class="nav-link" href="{{ url_for('logout') }}">↪ &nbsp; Sign out</a>
+  </div>
+</aside>
+{% endif %}
+<main class="{% if session.get('user_id') %}main{% else %}auth-main{% endif %}">
+  {% if session.get('user_id') %}
+  <header class="topbar"><div><span class="muted">Workspace</span><span class="crumb"> / {% block crumb %}Overview{% endblock %}</span></div><div class="top-user"><span class="status-dot"></span>{{ session.get('name') }} <span class="role-pill">{{ session.get('role') }}</span></div></header>
+  {% endif %}
+  <section class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}{% for category,message in messages %}<div class="alert {{ category }}">{{ message }}<button onclick="this.parentElement.remove()">×</button></div>{% endfor %}{% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </section>
+  <footer>FacultyFlow · Faculty Leave &amp; Workload Management · {{ current_year }}</footer>
+</main>
+</body></html>

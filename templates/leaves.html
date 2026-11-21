@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}Leave requests{% endblock %}{% block crumb %}Leave requests{% endblock %}
+{% block content %}<div class="page-heading"><div><div class="eyebrow">TIME OFF</div><h1>Leave requests</h1><p class="muted">Submit, track and review faculty leave.</p></div>{% if session.get('role')=='Faculty' %}<a class="btn primary" href="{{ url_for('new_leave') }}">＋ New request</a>{% endif %}</div>
+<div class="table-card"><table><thead><tr>{% if session.get('role')!='Faculty' %}<th>Faculty</th>{% endif %}<th>Type</th><th>Start</th><th>End</th><th>Reason</th><th>Status</th><th>Review note / action</th></tr></thead><tbody>
+{% for l in leaves %}<tr>{% if session.get('role')!='Faculty' %}<td>{{ l.faculty_name }}</td>{% endif %}<td>{{ l.leave_type }}</td><td>{{ l.start_date }}</td><td>{{ l.end_date }}</td><td>{{ l.reason }}</td><td><span class="badge {{ l.status|lower }}">{{ l.status }}</span></td><td>
+{% if session.get('role')=='Faculty' and l.status=='Pending' %}<a class="text-link" href="{{ url_for('edit_leave',leave_id=l.id) }}">Edit request</a>
+{% elif session.get('role') in ['HOD','Admin'] and l.status=='Pending' %}
+<form class="inline-review" method="post" action="{{ url_for('review_leave',leave_id=l.id) }}"><input name="review_note" placeholder="Optional note"><button name="decision" value="Approved" class="mini-btn approve">Approve</button><button name="decision" value="Rejected" class="mini-btn reject">Reject</button></form>
+{% else %}{{ l.review_note or '—' }}{% endif %}</td></tr>{% else %}<tr><td colspan="7" class="empty">No leave requests found.</td></tr>{% endfor %}
+</tbody></table></div>{% endblock %}

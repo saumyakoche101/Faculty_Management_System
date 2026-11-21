@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-heading"><div><div class="eyebrow">OVERVIEW</div><h1>Good day, {{ session.get('name').split(' ')[0] }} 👋</h1><p class="muted">Here's what's happening in your faculty workspace.</p></div>{% if session.get('role')=='Faculty' %}<a class="btn primary" href="{{ url_for('new_leave') }}">＋ Apply for leave</a>{% endif %}</div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-top"><span class="stat-icon blue">▤</span><span class="muted">Leave requests</span></div><div class="stat-value">{{ leaves|length }}</div><div class="stat-foot">Requests in your view</div></div>
+<div class="stat-card"><div class="stat-top"><span class="stat-icon amber">◷</span><span class="muted">Pending approvals</span></div><div class="stat-value">{{ pending }}</div><div class="stat-foot">Awaiting HOD/Admin review</div></div>
+<div class="stat-card"><div class="stat-top"><span class="stat-icon green">◉</span><span class="muted">Faculty members</span></div><div class="stat-value">{{ faculty_count }}</div><div class="stat-foot">Registered faculty</div></div>
+<div class="stat-card"><div class="stat-top"><span class="stat-icon purple">▥</span><span class="muted">Workload hours</span></div><div class="stat-value">{{ "%.1f"|format(total_hours) }}</div><div class="stat-foot">Hours recorded</div></div>
+</div>
+<div class="section-head"><div><h2>{% if session.get('role')=='Faculty' %}My leave requests{% else %}Recent leave requests{% endif %}</h2><p class="muted">Latest status and approval activity</p></div><a class="text-link" href="{{ url_for('leaves') }}">View all →</a></div>
+<div class="table-card"><table><thead><tr>{% if session.get('role')!='Faculty' %}<th>Faculty</th>{% endif %}<th>Leave type</th><th>Dates</th><th>Reason</th><th>Status</th>{% if session.get('role') in ['HOD','Admin'] %}<th>Action</th>{% endif %}</tr></thead><tbody>
+{% for l in leaves[:6] %}<tr>{% if session.get('role')!='Faculty' %}<td>{{ l.faculty_name }}</td>{% endif %}<td>{{ l.leave_type }}</td><td>{{ l.start_date }} – {{ l.end_date }}</td><td>{{ l.reason }}</td><td><span class="badge {{ l.status|lower }}">{{ l.status }}</span></td>{% if session.get('role') in ['HOD','Admin'] %}<td>{% if l.status=='Pending' %}<a class="text-link" href="{{ url_for('leaves') }}">Review</a>{% else %}—{% endif %}</td>{% endif %}</tr>{% else %}<tr><td colspan="6" class="empty">No leave requests yet.</td></tr>{% endfor %}
+</tbody></table></div>
+<div class="section-head"><div><h2>{% if session.get('role')=='Faculty' %}My timetable{% else %}Faculty workload{% endif %}</h2><p class="muted">Scheduled teaching hours</p></div><a class="text-link" href="{{ url_for('workload') }}">View workload →</a></div>
+<div class="table-card"><table><thead><tr>{% if session.get('role')!='Faculty' %}<th>Faculty</th>{% endif %}<th>Subject</th><th>Day</th><th>Time</th><th>Hours</th></tr></thead><tbody>{% for w in workload[:6] %}<tr>{% if session.get('role')!='Faculty' %}<td>{{ w.faculty_name }}</td>{% endif %}<td>{{ w.subject }}</td><td>{{ w.day }}</td><td>{{ w.start_time }} – {{ w.end_time }}</td><td>{{ w.hours }}</td></tr>{% else %}<tr><td colspan="5" class="empty">No workload entries yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

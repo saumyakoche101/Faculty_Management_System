@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}Register{% endblock %}
+{% block content %}<div class="auth-wrap"><div class="auth-brand"><div class="brand-icon large">F</div><div><h1>Faculty<span class="brand-light">Flow</span></h1><p>Create your faculty account.</p></div></div>
+<div class="auth-card"><div class="eyebrow">GET STARTED</div><h2>Faculty registration</h2><p class="muted">New registrations are assigned the Faculty role.</p>
+<form method="post"><label>Full name</label><input name="name" required placeholder="Your full name">
+<label>Email address</label><input type="email" name="email" required placeholder="you@college.edu">
+<label>Department</label><input name="department" value="Computer Science" required>
+<label>Password (minimum 8 characters)</label><input type="password" name="password" minlength="8" required>
+<button class="btn primary full">Create account <span>→</span></button></form>
+<div class="auth-switch">Already registered? <a href="{{ url_for('login') }}">Sign in</a></div></div></div>{% endblock %}
