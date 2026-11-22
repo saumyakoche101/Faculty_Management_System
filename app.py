@@ -107,11 +107,32 @@ def init_db():
     db.commit()
     db.close()
 
+def refresh_session_user():
+    """Validate the browser session against the current database.
+
+    This clears stale sessions after a hosted database is recreated or reset,
+    preventing foreign-key errors when a form is submitted.
+    """
+    user_id = session.get("user_id")
+    if not user_id:
+        return None
+    user = get_db().execute(
+        "SELECT id, name, email, role, department FROM users WHERE id=?", (user_id,)
+    ).fetchone()
+    if user is None:
+        session.clear()
+        return None
+    session["user_id"] = user["id"]
+    session["name"] = user["name"]
+    session["role"] = user["role"]
+    session["department"] = user["department"]
+    return user
+
 def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
-        if not session.get("user_id"):
-            flash("Please log in to continue.", "warning")
+        if refresh_session_user() is None:
+            flash("Your session expired. Please log in again.", "warning")
             return redirect(url_for("login"))
         return view(*args, **kwargs)
     return wrapped
@@ -120,9 +141,11 @@ def roles_required(*roles):
     def decorator(view):
         @wraps(view)
         def wrapped(*args, **kwargs):
-            if not session.get("user_id"):
+            user = refresh_session_user()
+            if user is None:
+                flash("Your session expired. Please log in again.", "warning")
                 return redirect(url_for("login"))
-            if session.get("role") not in roles:
+            if user["role"] not in roles:
                 flash("You do not have permission to access that page.", "danger")
                 return redirect(url_for("dashboard"))
             return view(*args, **kwargs)
