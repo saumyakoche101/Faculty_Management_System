@@ -1,7 +1,8 @@
 import os
 import sqlite3
-import smtplib
-from email.message import EmailMessage
+import json
+import urllib.request
+import urllib.error
 from functools import wraps
 from datetime import datetime, date
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
@@ -158,38 +159,41 @@ def notify(user_id, message):
 
 
 def send_email(recipient, subject, body):
-    """Send an email using SMTP settings stored in the hosting environment."""
+    """Send email through Resend's HTTPS API (Render blocks outbound SMTP)."""
     if not recipient:
         app.logger.warning("Email not sent: recipient address is missing.")
         return False
 
-    mail_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
-    mail_port = int(os.environ.get("MAIL_PORT", "587"))
-    mail_username = os.environ.get("MAIL_USERNAME", "")
-    mail_password = os.environ.get("MAIL_PASSWORD", "")
-    mail_sender = os.environ.get("MAIL_DEFAULT_SENDER") or mail_username
-    use_tls = os.environ.get("MAIL_USE_TLS", "true").strip().lower() in ("1", "true", "yes", "on")
-
-    if not mail_username or not mail_password or not mail_sender:
-        app.logger.warning("Email not sent: Gmail SMTP environment variables are incomplete.")
+    api_key = os.environ.get("RESEND_API_KEY", "").strip()
+    sender = os.environ.get("MAIL_DEFAULT_SENDER", "").strip()
+    if not api_key or not sender:
+        app.logger.warning(
+            "Email not sent: set RESEND_API_KEY and MAIL_DEFAULT_SENDER in Render."
+        )
         return False
 
-    message = EmailMessage()
-    message["Subject"] = subject
-    message["From"] = mail_sender
-    message["To"] = recipient
-    message.set_content(body)
-
+    payload = json.dumps({
+        "from": sender,
+        "to": [recipient],
+        "subject": subject,
+        "text": body,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
     try:
-        with smtplib.SMTP(mail_server, mail_port, timeout=20) as smtp:
-            smtp.ehlo()
-            if use_tls:
-                smtp.starttls()
-                smtp.ehlo()
-            smtp.login(mail_username, mail_password)
-            smtp.send_message(message)
-        app.logger.info("Email sent successfully to %s", recipient)
-        return True
+        with urllib.request.urlopen(req, timeout=8) as response:
+            if 200 <= response.status < 300:
+                app.logger.info("Email sent successfully to %s", recipient)
+                return True
+            app.logger.error("Email API returned HTTP %s", response.status)
+            return False
     except Exception:
         app.logger.exception("Email delivery failed for recipient %s", recipient)
         return False
