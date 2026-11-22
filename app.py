@@ -314,14 +314,20 @@ def new_leave():
                       VALUES(?,?,?,?,?)""", (session["user_id"], leave_type, start, end, reason))
         db.commit()
         reviewers = db.execute("SELECT id,email,name FROM users WHERE role IN ('HOD','Admin')").fetchall()
+        
         for reviewer in reviewers:
             message = f"New leave request from {session['name']} ({start} to {end})."
             notify(reviewer["id"], message)
-            send_email(
-                "onboarding@resend.dev"
-                "FacultyFlow: New leave request submitted",
-                f"Hello {reviewer['name']},\\n\\n{message}\\nPlease log in to FacultyFlow to review the request."
-            )
+
+            try:
+                send_email(
+                    reviewer["email"],
+                    "FacultyFlow: New leave request submitted",
+                    f"Hello {reviewer['name']},\n\n{message}\n\nPlease log in to FacultyFlow to review the request."
+                )
+            except Exception:
+                app.logger.exception("Email delivery failed")
+
         flash("Leave request submitted for approval.", "success")
         return redirect(url_for("leaves"))
     return render_template("leave_form.html", leave=None)
