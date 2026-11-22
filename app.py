@@ -318,7 +318,7 @@ def new_leave():
             message = f"New leave request from {session['name']} ({start} to {end})."
             notify(reviewer["id"], message)
             send_email(
-                reviewer["email"],
+                "saumyakoche101@gmail.com",
                 "FacultyFlow: New leave request submitted",
                 f"Hello {reviewer['name']},\\n\\n{message}\\nPlease log in to FacultyFlow to review the request."
             )
