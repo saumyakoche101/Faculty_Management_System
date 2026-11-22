@@ -1,5 +1,7 @@
 import os
 import sqlite3
+import smtplib
+from email.message import EmailMessage
 from functools import wraps
 from datetime import datetime, date
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g
@@ -131,6 +133,44 @@ def notify(user_id, message):
     get_db().execute("INSERT INTO notifications(user_id,message) VALUES(?,?)", (user_id, message))
     get_db().commit()
 
+
+def send_email(recipient, subject, body):
+    """Send an email using SMTP settings stored in the hosting environment."""
+    if not recipient:
+        app.logger.warning("Email not sent: recipient address is missing.")
+        return False
+
+    mail_server = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
+    mail_port = int(os.environ.get("MAIL_PORT", "587"))
+    mail_username = os.environ.get("MAIL_USERNAME", "")
+    mail_password = os.environ.get("MAIL_PASSWORD", "")
+    mail_sender = os.environ.get("MAIL_DEFAULT_SENDER") or mail_username
+    use_tls = os.environ.get("MAIL_USE_TLS", "true").strip().lower() in ("1", "true", "yes", "on")
+
+    if not mail_username or not mail_password or not mail_sender:
+        app.logger.warning("Email not sent: Gmail SMTP environment variables are incomplete.")
+        return False
+
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = mail_sender
+    message["To"] = recipient
+    message.set_content(body)
+
+    try:
+        with smtplib.SMTP(mail_server, mail_port, timeout=20) as smtp:
+            smtp.ehlo()
+            if use_tls:
+                smtp.starttls()
+                smtp.ehlo()
+            smtp.login(mail_username, mail_password)
+            smtp.send_message(message)
+        app.logger.info("Email sent successfully to %s", recipient)
+        return True
+    except Exception:
+        app.logger.exception("Email delivery failed for recipient %s", recipient)
+        return False
+
 @app.context_processor
 def inject_globals():
     if session.get("user_id"):
@@ -246,9 +286,15 @@ def new_leave():
         db.execute("""INSERT INTO leave_requests(faculty_id,leave_type,start_date,end_date,reason)
                       VALUES(?,?,?,?,?)""", (session["user_id"], leave_type, start, end, reason))
         db.commit()
-        reviewers = db.execute("SELECT id FROM users WHERE role IN ('HOD','Admin')").fetchall()
+        reviewers = db.execute("SELECT id,email,name FROM users WHERE role IN ('HOD','Admin')").fetchall()
         for reviewer in reviewers:
-            notify(reviewer["id"], f"New leave request from {session['name']} ({start} to {end}).")
+            message = f"New leave request from {session['name']} ({start} to {end})."
+            notify(reviewer["id"], message)
+            send_email(
+                reviewer["email"],
+                "FacultyFlow: New leave request submitted",
+                f"Hello {reviewer['name']},\\n\\n{message}\\nPlease log in to FacultyFlow to review the request."
+            )
         flash("Leave request submitted for approval.", "success")
         return redirect(url_for("leaves"))
     return render_template("leave_form.html", leave=None)
@@ -300,7 +346,16 @@ def review_leave(leave_id):
     db.execute("""UPDATE leave_requests SET status=?,reviewer_id=?,review_note=? WHERE id=?""",
                (decision, session["user_id"], note, leave_id))
     db.commit()
-    notify(leave["faculty_id"], f"Your leave request ({leave['start_date']} to {leave['end_date']}) was {decision.lower()}.")
+    message = f"Your leave request ({leave['start_date']} to {leave['end_date']}) was {decision.lower()}."
+    notify(leave["faculty_id"], message)
+    faculty_user = db.execute("SELECT name,email FROM users WHERE id=?", (leave["faculty_id"],)).fetchone()
+    if faculty_user:
+        note_text = f"\\nReview note: {note}" if note else ""
+        send_email(
+            faculty_user["email"],
+            f"FacultyFlow: Leave request {decision.lower()}",
+            f"Hello {faculty_user['name']},\\n\\n{message}{note_text}\\n\\nPlease log in to FacultyFlow for details."
+        )
     flash(f"Leave request {decision.lower()}.", "success")
     return redirect(url_for("leaves"))
 
@@ -356,7 +411,13 @@ def substitutions():
                         request.form.get("subject","Substitute class").strip(),
                         request.form.get("notes","").strip()))
             db.commit()
-            notify(substitute_id, f"You have been assigned substitute duty on {leave['start_date']}.")
+            assignment_message = f"You have been assigned substitute duty on {leave['start_date']} for {leave['end_date']}."
+            notify(substitute_id, assignment_message)
+            send_email(
+                sub["email"],
+                "FacultyFlow: Substitute duty assigned",
+                f"Hello {sub['name']},\\n\\n{assignment_message}\\nSubject: {request.form.get('subject', 'Substitute class').strip()}\\nPlease log in to FacultyFlow for the assignment details."
+            )
             flash("Substitute faculty assigned and notified.", "success")
         return redirect(url_for("substitutions"))
     approved = db.execute("""SELECT l.*,u.name AS faculty_name FROM leave_requests l
