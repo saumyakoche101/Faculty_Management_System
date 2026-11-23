@@ -67,9 +67,9 @@ The system provides a centralized platform for faculty members and administrator
    python app.py
    ```
 
-7. Open your browser and visit:
+7. Application Link:
 
-   `http://127.0.0.1:5000`
+   `https://facultyflow-w7hy.onrender.com`
 
 ## Project Structure
 
